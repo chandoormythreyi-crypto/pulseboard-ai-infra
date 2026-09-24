@@ -1,0 +1,3 @@
+assume_role = {
+  role_arn = "arn:aws:iam::<TOOLING_ACCOUNT_ID>:role/terraform-deploy"
+}
