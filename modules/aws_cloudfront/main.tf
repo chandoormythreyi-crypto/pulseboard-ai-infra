@@ -90,7 +90,7 @@ resource "aws_cloudfront_distribution" "this" {
 
   viewer_certificate {
     cloudfront_default_certificate = length(var.aliases) == 0 || !var.create_certificate
-    acm_certificate_arn            = length(var.aliases) > 0 && var.create_certificate ? aws_acm_certificate.this[0].arn : null
+    acm_certificate_arn            = length(var.aliases) > 0 && var.create_certificate ? (local.dns_validate ? aws_acm_certificate_validation.this[0].certificate_arn : aws_acm_certificate.this[0].arn) : null
     ssl_support_method             = length(var.aliases) > 0 && var.create_certificate ? var.ssl_support_method : null
     minimum_protocol_version       = length(var.aliases) > 0 && var.create_certificate ? var.minimum_protocol_version : "TLSv1"
   }
@@ -119,4 +119,49 @@ resource "aws_acm_certificate" "this" {
   }
 
   tags = merge(var.tags, { Name = "${var.name}-certificate" })
+}
+
+locals {
+  dns_validate = var.route53_zone_id != null && var.create_certificate && length(var.aliases) > 0
+}
+
+# Route53-managed ACM validation (only when a hosted zone is provided).
+resource "aws_route53_record" "cert_validation" {
+  for_each = local.dns_validate ? {
+    for dvo in aws_acm_certificate.this[0].domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      type   = dvo.resource_record_type
+      record = dvo.resource_record_value
+    }
+  } : {}
+
+  zone_id         = var.route53_zone_id
+  name            = each.value.name
+  type            = each.value.type
+  records         = [each.value.record]
+  ttl             = 60
+  allow_overwrite = true
+}
+
+resource "aws_acm_certificate_validation" "this" {
+  count    = local.dns_validate ? 1 : 0
+  provider = aws.us_east_1
+
+  certificate_arn         = aws_acm_certificate.this[0].arn
+  validation_record_fqdns = [for r in aws_route53_record.cert_validation : r.fqdn]
+}
+
+# Point each alias at the distribution.
+resource "aws_route53_record" "alias" {
+  for_each = var.route53_zone_id != null ? toset(var.aliases) : toset([])
+
+  zone_id = var.route53_zone_id
+  name    = each.value
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.this.domain_name
+    zone_id                = aws_cloudfront_distribution.this.hosted_zone_id
+    evaluate_target_health = false
+  }
 }

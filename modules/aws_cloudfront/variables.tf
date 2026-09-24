@@ -80,6 +80,12 @@ variable "create_certificate" {
   default     = true
 }
 
+variable "route53_zone_id" {
+  description = "Route53 hosted zone id for the aliases. When set, ACM DNS validation records, certificate validation, and alias A records are created automatically (one-step apply). When null, the cert is created but validation is left for manual DNS."
+  type        = string
+  default     = null
+}
+
 variable "ssl_support_method" {
   description = "Method that CloudFront uses to serve HTTPS requests"
   type        = string

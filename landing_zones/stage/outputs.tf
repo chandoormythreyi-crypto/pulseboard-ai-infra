@@ -33,7 +33,12 @@ output "frontend_cloudfront_distribution_id" {
   value       = module.frontend_cdn.cloudfront_distribution_id
 }
 
-output "frontend_certificate_validation" {
-  description = "ACM DNS-validation records to add in Cloudflare (null when no aliases)."
-  value       = module.frontend_cdn.certificate_validation_options
+output "route53_zone_id" {
+  description = "Route53 hosted zone id for pulseboard.world."
+  value       = aws_route53_zone.world.zone_id
+}
+
+output "route53_name_servers" {
+  description = "Delegate the registrar's NS records to these to make Route53 authoritative."
+  value       = aws_route53_zone.world.name_servers
 }

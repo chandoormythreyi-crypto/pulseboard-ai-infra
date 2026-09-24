@@ -21,6 +21,7 @@ module "frontend_cdn" {
 
   aliases            = var.frontend_aliases
   create_certificate = length(var.frontend_aliases) > 0
+  route53_zone_id    = aws_route53_zone.world.zone_id
 
   env  = local.env_slug
   tags = local.tags
