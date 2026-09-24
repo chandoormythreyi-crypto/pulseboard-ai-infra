@@ -80,8 +80,14 @@ variable "create_certificate" {
   default     = true
 }
 
+variable "manage_dns" {
+  description = "When true (with route53_zone_id set), create ACM DNS-validation records, an aws_acm_certificate_validation, and alias A records in Route53 for a one-step apply. Kept separate from route53_zone_id because the zone id may be unknown at plan time (created in the same apply)."
+  type        = bool
+  default     = false
+}
+
 variable "route53_zone_id" {
-  description = "Route53 hosted zone id for the aliases. When set, ACM DNS validation records, certificate validation, and alias A records are created automatically (one-step apply). When null, the cert is created but validation is left for manual DNS."
+  description = "Route53 hosted zone id for the aliases. Used when manage_dns is true. Its value may be known only after apply."
   type        = string
   default     = null
 }

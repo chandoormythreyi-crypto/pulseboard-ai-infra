@@ -122,7 +122,7 @@ resource "aws_acm_certificate" "this" {
 }
 
 locals {
-  dns_validate = var.route53_zone_id != null && var.create_certificate && length(var.aliases) > 0
+  dns_validate = var.manage_dns && var.create_certificate && length(var.aliases) > 0
 }
 
 # Route53-managed ACM validation (only when a hosted zone is provided).
@@ -153,7 +153,7 @@ resource "aws_acm_certificate_validation" "this" {
 
 # Point each alias at the distribution.
 resource "aws_route53_record" "alias" {
-  for_each = var.route53_zone_id != null ? toset(var.aliases) : toset([])
+  for_each = var.manage_dns ? toset(var.aliases) : toset([])
 
   zone_id = var.route53_zone_id
   name    = each.value
