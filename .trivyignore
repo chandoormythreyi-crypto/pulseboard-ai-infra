@@ -1,0 +1,5 @@
+# AVD-AWS-0089 — S3 bucket server access logging disabled.
+# Waived for the Terraform state bucket (pulseboard-tfstate): we deliberately
+# do not provision a dedicated log-sink bucket for a Terraform-only bucket.
+# Access auditing, if needed later, comes from CloudTrail S3 data events.
+AVD-AWS-0089
