@@ -69,3 +69,31 @@ resource "aws_route53_record" "txt" {
   ttl     = 300
   records = [each.value]
 }
+
+# dev.pulseboard.world — the stage account's frontend host until customers sign
+# off on moving staging. pulseboard.world stays on Cloudflare for now, so dev is
+# delegated there via NS records (see dev_name_servers output); the delegation is
+# also mirrored into the prepared pulseboard.world zone for the later cutover.
+resource "aws_route53_zone" "dev" {
+  name    = "dev.pulseboard.world"
+  comment = "Stage-account frontend (delegated from pulseboard.world)"
+  tags    = local.tags
+}
+
+resource "aws_route53_record" "dev_delegation" {
+  zone_id = aws_route53_zone.world.zone_id
+  name    = "dev.pulseboard.world"
+  type    = "NS"
+  ttl     = 300
+  records = aws_route53_zone.dev.name_servers
+}
+
+# Customer-facing staging stays on the management-account CloudFront until the
+# switch is confirmed; keeps it resolving if pulseboard.world is delegated first.
+resource "aws_route53_record" "staging" {
+  zone_id = aws_route53_zone.world.zone_id
+  name    = "staging.pulseboard.world"
+  type    = "CNAME"
+  ttl     = 300
+  records = ["ddrd3vmseqa8i.cloudfront.net"]
+}

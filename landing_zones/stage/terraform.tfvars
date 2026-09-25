@@ -31,6 +31,6 @@ db_deletion_protection     = false
 db_skip_final_snapshot     = true
 
 # ---- Frontend ----
-# ACM cert is created for these; add the DNS-validation CNAMEs in Cloudflare at
-# apply time (see frontend_certificate_validation output).
-frontend_aliases = ["staging.pulseboard.world"]
+# dev (not staging) until customers confirm the switch. Cert validation and the
+# alias live in the Route53 dev.pulseboard.world zone.
+frontend_aliases = ["dev.pulseboard.world"]

@@ -42,3 +42,8 @@ output "route53_name_servers" {
   description = "Delegate the registrar's NS records to these to make Route53 authoritative."
   value       = aws_route53_zone.world.name_servers
 }
+
+output "dev_name_servers" {
+  description = "Add these as NS records for dev.pulseboard.world in Cloudflare to delegate dev to Route53."
+  value       = aws_route53_zone.dev.name_servers
+}
